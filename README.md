@@ -16,8 +16,15 @@ Before you get started with this project, make sure you have the following prere
 
 * Azure Subscription: You need an active Azure subscription to deploy Serverless Azure Functions and ARM templates.
 
+#### Azure Function App Hosted on Linux Consumption Plan
+his sample Azure Resource Manager template deploys an Azure Function App on Linux Consumption plan and required resource including the app setting to deploy using zip package when remote build is needed.
+
+
+![Deploy to Azure](https://aka.ms/deploytoazurebutton)
+
 #### Architecture of project
 ##### Deployment with Azure Functions with HTTP Trigger
+
 
 
 ![architecture-diagram](https://github.com/Mohamed-M-Zain/azure-boards-automate-state-transition-parent-serverless/assets/144002170/42117d1c-769b-46e7-aa0e-ba48471fcada)

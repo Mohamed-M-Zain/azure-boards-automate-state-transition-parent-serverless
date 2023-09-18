@@ -20,7 +20,7 @@ Before you get started with this project, make sure you have the following prere
 his sample Azure Resource Manager template deploys an Azure Function App on Linux Consumption plan and required resource including the app setting to deploy using zip package when remote build is needed.
 
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/[[https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fazure-quickstart-templates%2Fmaster%2Fquickstarts%2Fmicrosoft.storage%2Fstorage-account-create%2Fazuredeploy.json](https://raw.githubusercontent.com/Mohamed-M-Zain/azure-boards-automate-state-transition-parent-serverless/main/zainfunction.json?token=GHSAT0AAAAAACHD2CEACNE44JK6HIFEV67UZIIFQNQ)])
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/[[https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fazure-quickstart-templates%2Fmaster%2Fquickstarts%2Fmicrosoft.storage%2Fstorage-account-create%2Fazuredeploy.json](https://github.com/Mohamed-M-Zain/azure-boards-automate-state-transition-parent-serverless/blob/main/zainfunction.json)])
 
 #### Architecture of project
 ##### Deployment with Azure Functions with HTTP Trigger

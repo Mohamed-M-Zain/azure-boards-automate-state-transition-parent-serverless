@@ -1,0 +1,296 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "functionAppName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Azure Function app."
+      }
+    },
+    "storageAccountType": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_GRS",
+        "Standard_RAGRS"
+      ],
+      "metadata": {
+        "description": "Storage Account type"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "appInsightsLocation": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for Application Insights"
+      }
+    },
+    "functionWorkerRuntime": {
+      "type": "string",
+      "defaultValue": "python",
+      "allowedValues": [
+        "dotnet",
+        "node",
+        "python",
+        "java"
+      ],
+      "metadata": {
+        "description": "The language worker runtime to load in the function app."
+      }
+    },
+    "functionPlanOS": {
+      "type": "string",
+      "defaultValue": "Linux",
+      "allowedValues": [
+        "Windows",
+        "Linux"
+      ],
+      "metadata": {
+        "description": "Specifies the OS used for the Azure Function hosting plan."
+      }
+    },
+    "functionAppPlanSku": {
+      "type": "string",
+      "defaultValue": "Consumption",
+      "allowedValues": [
+        "S1",
+        "S2",
+        "S3",
+        "Consumption"
+      ],
+      "metadata": {
+        "description": "Specifies the Azure Function hosting plan SKU."
+      }
+    },
+    "linuxFxVersion": {
+      "type": "string",
+      "metadata": {
+        "description": "Only required for Linux app to represent runtime stack in the format of 'runtime|runtimeVersion'. For example: 'python|3.9'"
+      }
+    },
+    "STORAGEACCOUNTNAME": {
+      "type": "string",
+      "defaultValue": "testzain24",
+      "metadata": {
+        "description": "name of storage account name which used to store rules.json"
+      }
+    },
+    "STORAGEACCOUNTKEY": {
+      "type": "string",
+      "defaultValue": "Ax4LA1eMO2zpReQkYfKlDnSw1LTxoCYOSB187l3z89rDHMUKs/6wAlZEHF/0QMSOVOD8NQnmTXgA+AStl7AZ8w==",
+      "metadata": {
+        "description": "STORAGE ACCOUNT KEY"
+      }
+    },
+    "Connectionstring": {
+      "type": "string",
+      "defaultValue": "DefaultEndpointsProtocol=https;AccountName=testzain24;AccountKey=Ax4LA1eMO2zpReQkYfKlDnSw1LTxoCYOSB187l3z89rDHMUKs/6wAlZEHF/0QMSOVOD8NQnmTXgA+AStl7AZ8w==;EndpointSuffix=core.windows.net",
+      "metadata": {
+        "description": "Connection string of storage account"
+      }
+    },
+    "personalaccesstokens": {
+      "type": "string",
+      "metadata": {
+        "description": "personal access tokens(PATs) for Azure DevOps"
+      }
+    },
+    "SASTOKEN": {
+      "type": "string",
+      "metadata": {
+        "description": "shared access signature (SAS) tokens that allow access to Azure Storage services in a secure manner"
+      }
+    },
+    "rulesfileURL": {
+      "type": "string",
+      "defaultValue": "https://testzain24.blob.core.windows.net/zain2/rules.task.json",
+      "metadata": {
+        "description": "URL Of Rules.JSON"
+      }
+    },
+    "packageUri": {
+      "type": "string",
+      "defaultValue": "https://zainfunctionapp.blob.core.windows.net/appfunctionurl/zip_package_final.zip",
+      "metadata": {
+        "description": "The zip content url.[it is better to store in blob storage]"
+      }
+    }
+  },
+  "variables": {
+    "hostingPlanName": "[parameters('functionAppName')]",
+    "applicationInsightsName": "[parameters('functionAppName')]",
+    "storageAccountName": "[format('{0}azfunctions', uniqueString(resourceGroup().id))]",
+    "isReserved": "[if(equals(parameters('functionPlanOS'), 'Linux'), true(), false())]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2022-05-01",
+      "name": "[variables('storageAccountName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "[parameters('storageAccountType')]"
+      },
+      "kind": "Storage"
+    },
+    {
+      "condition": "[not(equals(parameters('functionAppPlanSku'), 'Consumption'))]",
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2022-03-01",
+      "name": "[variables('hostingPlanName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "tier": "Standard",
+        "name": "[parameters('functionAppPlanSku')]",
+        "family": "S",
+        "capacity": 1
+      },
+      "properties": {
+        "reserved": "[variables('isReserved')]"
+      }
+    },
+    {
+      "condition": "[equals(parameters('functionAppPlanSku'), 'Consumption')]",
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2022-03-01",
+      "name": "[variables('hostingPlanName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "tier": "Dynamic",
+        "name": "Y1"
+      },
+      "properties": {
+        "reserved": "[variables('isReserved')]"
+      }
+    },
+    {
+        "type": "Microsoft.Insights/components",
+        "apiVersion": "2020-02-02",
+        "name": "[variables('applicationInsightsName')]",
+        "location": "[parameters('appInsightsLocation')]",
+        "tags": {
+          "[format('hidden-link:{0}', resourceId('Microsoft.Web/sites', variables('applicationInsightsName')))]": "Resource"
+        },
+        "properties": {
+          "Application_Type": "web"
+        },
+        "kind": "web"
+      },
+      {
+        "type": "Microsoft.Web/sites",
+        "apiVersion": "2022-03-01",
+        "name": "[parameters('functionAppName')]",
+        "location": "[parameters('location')]",
+        "kind": "[if(variables('isReserved'), 'functionapp,linux', 'functionapp')]",
+        "properties": {
+          "reserved": "[variables('isReserved')]",
+          "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+          "siteConfig": {
+            "alwaysOn": false,
+            "linuxFxVersion": "[if(variables('isReserved'), parameters('linuxFxVersion'), json('null'))]",
+            "enabledHostNames": [
+            "[concat(parameters('functionAppName'), '.azurewebsites.net')]",
+            "[concat(parameters('functionAppName'), '.scm.azurewebsites.net')]"
+            ],
+            "sshEnabled": true,  
+            "appSettings": [
+              {
+                "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                "value": "[reference(resourceId('Microsoft.Insights/components', variables('applicationInsightsName')), '2015-05-01').InstrumentationKey]"
+              },
+              {
+                "name": "AzureWebJobsStorage",
+                "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', variables('storageAccountName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2022-05-01').keys[0].value)]"
+              },
+              {
+              "name": "WEBSITE_CONTENTSHARE",
+              "value": "[toLower(parameters('functionAppName'))]"
+              },
+              {
+              "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', variables('storageAccountName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-06-01').keys[0].value)]"
+              },
+              {
+                "name": "FUNCTIONS_EXTENSION_VERSION",
+                "value": "~4"
+              },
+              {
+                "name": "FUNCTIONS_WORKER_RUNTIME",
+                "value": "[parameters('functionWorkerRuntime')]"
+              },
+              {
+                "name": "WEBSITE_NODE_DEFAULT_VERSION",
+                "value": "~14"
+              },
+              {
+                "name": "pattoken",
+                "value": "[parameters('personalaccesstokens')]"
+              },
+              {
+                "name": "SAS_TOKEN",
+                "value": "[parameters('SASTOKEN')]"
+              },
+              {
+                "name": "BLOB_URL",
+                "value": "[parameters('rulesfileURL')]"
+              },
+              {
+                "name": "STORAGE_ACCOUNT_NAME",
+                "value": "[parameters('STORAGEACCOUNTNAME')]"
+              },
+              {
+                "name": "STORAGE_ACCOUNT_KEY",
+                "value": "[parameters('STORAGEACCOUNTKEY')]"
+              },
+              {
+                "name": "AzureWebJobsStorage1",
+                "value": "[parameters('Connectionstring')]"
+              },
+              {
+                "name": "ifcompletedstate",
+                "value": "completed"
+              },
+              {
+                "name": "SCM_DO_BUILD_DURING_DEPLOYMENT",
+                "value": "true"
+              },
+              {
+                "name": "ENABLE_ORYX_BUILD",
+                "value": "true"
+              }
+
+            ],
+            "cors": {
+              "allowedOrigins": ["https://portal.azure.com"] // Add your allowed origins here
+            }
+          }
+        },
+        "dependsOn": [
+          "[resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))]",
+          "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+          "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+        ]
+      },
+      {
+        "type": "Microsoft.Web/sites/extensions",
+        "apiVersion": "2021-02-01",
+        "name": "[format('{0}/{1}', parameters('functionAppName'), 'zipdeploy')]",
+        "properties": {
+          "packageUri": "[parameters('packageUri')]"
+        },
+        "dependsOn": [
+          "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
+        ]
+      }
+      
+    ]
+  }

@@ -112,8 +112,10 @@ his sample Azure Resource Manager template deploys an Azure Function App on Linu
    
 5. take Zip_package.zip and upload it in new Container and copy URL of Zip_package.zip and save it in NotePad.
     **Note:** make anonymous access level in this state is container(anonymous read access for containers and blob)
-6. 
+   
+7. deploy ARM Template to Azure.
 
+ ![deploy_to_azure](https://github.com/Mohamed-M-Zain/azure-boards-automate-state-transition-parent-serverless/blob/main/images%20of%20project/photo4.png)
 
 
 
